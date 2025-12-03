@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday Taha!</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+        color: white;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    p {
+        font-size: 16px;
+        margin-bottom: 20px;
+        color: #ccc;
+    }
+
+    canvas {
+        border-radius: 10px;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<h1>Happy Birthday Taha! :3</h1>
+<p>Click the raccoon to celebrate!</p>
+<canvas id="canvas" width="500" height="500"></canvas>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// Load images
+const background = new Image();
+background.src = 'background.png';
+
+const raccoon = new Image();
+raccoon.src = 'raccoon.png';
+
+const raccoonFlipped = new Image();
+raccoonFlipped.src = 'raccoon_flipped.png';
+
+// Load audio
+const audio = new Audio('happy_birthday.mp3');
+audio.volume = 1.0;
+
+// Raccoon settings
+const rac = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    width: 300,  // bigger raccoon
+    height: 300,
+    flipped: false,
+    dancing: false,
+    interval: null
+};
+
+// Draw function
+function draw() {
+    // Background
+    if (background.complete && background.naturalWidth > 0) {
+        ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    } else {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Raccoon
+    const img = rac.flipped ? raccoonFlipped : raccoon;
+    if (img.complete && img.naturalWidth > 0) {
+        ctx.drawImage(img, rac.x - rac.width / 2, rac.y - rac.height / 2, rac.width, rac.height);
+    } else {
+        ctx.fillStyle = '#8B7355';
+        ctx.fillRect(rac.x - rac.width / 2, rac.y - rac.height / 2, rac.width, rac.height);
+    }
+}
+
+// Start dancing
+function startDance() {
+    if (rac.dancing) return;
+
+    rac.dancing = true;
+    audio.currentTime = 0;
+    audio.play().catch(console.log);
+
+    // Flip raccoon every 600ms
+    rac.interval = setInterval(() => {
+        rac.flipped = !rac.flipped;
+        draw();
+    }, 600);
+
+    // Stop when audio ends
+    audio.onended = stopDance;
+}
+
+// Stop dancing
+function stopDance() {
+    rac.dancing = false;
+    clearInterval(rac.interval);
+    rac.interval = null;
+    rac.flipped = false;
+    draw();
+}
+
+// Click / touch event
+function handleClick(e) {
+    const rect = canvas.getBoundingClientRect();
+    let x, y;
+
+    if (e.type === 'touchstart') {
+        e.preventDefault();
+        x = e.touches[0].clientX - rect.left;
+        y = e.touches[0].clientY - rect.top;
+    } else {
+        x = e.clientX - rect.left;
+        y = e.clientY - rect.top;
+    }
+
+    if (
+        x >= rac.x - rac.width / 2 &&
+        x <= rac.x + rac.width / 2 &&
+        y >= rac.y - rac.height / 2 &&
+        y <= rac.y + rac.height / 2
+    ) {
+        startDance();
+    }
+}
+
+canvas.addEventListener('click', handleClick);
+canvas.addEventListener('touchstart', handleClick);
+
+// Initial draw
+draw();
+
+// Redraw when images load
+background.onload = draw;
+raccoon.onload = draw;
+raccoonFlipped.onload = draw;
+</script>
+
+</body>
+</html>
